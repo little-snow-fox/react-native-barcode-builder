@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { View, StyleSheet, ART, Text } from 'react-native';
+import {View, StyleSheet, ART, Text, ViewStyle} from 'react-native';
 import PropTypes from 'prop-types';
 
 import barcodes from 'jsbarcode/src/barcodes';
@@ -23,7 +23,7 @@ export default class Barcode extends PureComponent {
     /* Set the color of the text. */
     textColor: PropTypes.string,
     /* Set the background of the barcode. */
-    background: PropTypes.string,
+    backgroundStyle: ViewStyle,
     /* Handle error for invalid barcode of selected format */
     onError: PropTypes.func
   };
@@ -124,14 +124,8 @@ export default class Barcode extends PureComponent {
 
   // encode() handles the Encoder call and builds the binary string to be rendered
   encode(text, Encoder, options) {
-    // If text is not a non-empty string, throw error.
-    if (typeof text !== "string" || text.length === 0) {
-      if (this.props.onError) {
-        this.props.onError(new Error('Barcode value must be a non-empty string'));
-        return;
-      }
-      throw new Error('Barcode value must be a non-empty string');
-    }
+    // Ensure that text is a string
+    text = '' + text;
 
     var encoder;
 
@@ -142,8 +136,9 @@ export default class Barcode extends PureComponent {
       if (this.props.onError)  {
         this.props.onError(new Error('Invalid barcode format.'));
         return;
+      } else {
+        throw new Error('Invalid barcode format.');
       }
-      throw new Error('Invalid barcode format.');
     }
 
     // If the input is not valid for the encoder, throw error.
@@ -151,8 +146,9 @@ export default class Barcode extends PureComponent {
       if (this.props.onError) {
         this.props.onError(new Error('Invalid barcode for selected format.'));
         return;
+      } else {
+        throw new Error('Invalid barcode for selected format.');
       }
-      throw new Error('Invalid barcode for selected format.');
     }
 
     // Make a request for the binary data (and other infromation) that should be rendered
@@ -166,10 +162,8 @@ export default class Barcode extends PureComponent {
   }
 
   render() {
+    const {backgroundStyle} = this.props
     this.update();
-    const backgroundStyle = {
-      backgroundColor: this.props.background
-    };
     return (
       <View style={[styles.svgContainer, backgroundStyle]}>
         <Surface height={this.props.height} width={this.state.barCodeWidth}>
@@ -186,6 +180,7 @@ export default class Barcode extends PureComponent {
 const styles = StyleSheet.create({
   svgContainer: {
     alignItems: 'center',
-    padding: 10
+    padding: 10,
+    backgroundColor: '#fff'
   }
 });
